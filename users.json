@@ -1,0 +1,14 @@
+[
+    {
+        "username": "Alex",
+        "password": "dbadfc88144b0c153a2d1bdf154681c857a237eb79d58df24e918bca6e17db05",
+        "role": "custom",
+        "subjects": []
+    },
+    {
+        "username": "Admin",
+        "password": "a651189a7d1fba690a2228d50be7d36afad5cd44629273319f6910194c1072a5",
+        "role": "admin",
+        "subjects": []
+    }
+]
