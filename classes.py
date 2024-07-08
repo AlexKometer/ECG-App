@@ -2,39 +2,27 @@ import json
 from datetime import datetime
 import os
 
-
 class Person:
+    DEFAULT_SUBJECT_IDS = {1, 2, 3}  # IDs of the subjects that are accessible to all users
+
     @staticmethod
     def load_person_data():
-        """A Function that knows where te person Database is and returns a Dictionary with the Persons"""
-        file = open("../ECGApp/data/person_db.json")
-        person_data = json.load(file)
-        return person_data
+        """A Function that knows where the person Database is and returns a Dictionary with the Persons"""
+        try:
+            with open('data/person_db.json') as file:
+                person_data = json.load(file)
+            return person_data
+        except json.JSONDecodeError:
+            return []  # Return an empty list if JSON is invalid or empty
 
     @staticmethod
-    def get_person_list(person_data):
-        """A Function that takes the persons-dictionary and returns a list auf all person names"""
+    def get_person_list(person_data, current_user):
+        """A Function that takes the persons-dictionary and returns a list of all person names the current user is allowed to see"""
         list_of_names = []
-
-        for eintrag in person_data:
-            list_of_names.append(eintrag["lastname"] + ", " + eintrag["firstname"])
+        for entry in person_data:
+            if current_user['role'] == 'admin' or entry.get("owner") == current_user['username'] or entry["id"] in Person.DEFAULT_SUBJECT_IDS:
+                list_of_names.append(entry["lastname"] + ", " + entry["firstname"])
         return list_of_names
-
-    @staticmethod
-    def find_person_data_by_id(suchstring):
-        person_data = Person.load_person_data()
-
-        if suchstring == "None":
-            return {}
-
-        for eintrag in person_data:
-
-            if (eintrag["id"] == suchstring):
-                print()
-
-                return eintrag
-        else:
-            return {}
 
     def __init__(self, person_dict) -> None:
         self.date_of_birth = person_dict["date_of_birth"]
@@ -43,7 +31,8 @@ class Person:
         self.picture_path = person_dict["picture_path"]
         self.id = person_dict["id"]
         self.sex = person_dict["sex"]
-        self.ekg_tests = person_dict["ekg_tests"]
+        self.ecg_tests = person_dict["ekg_tests"]
+        self.owner = person_dict.get("owner", "")
         self.age = self.calculate_person_age()
         self.max_hr = self.estimated_max_hr(self.age, self.sex)
 
@@ -54,7 +43,8 @@ class Person:
         return self.sex
 
     def calculate_person_age(self):
-        age = datetime.now ().year - self.date_of_birth
+        current_year = datetime.now().year
+        age = current_year - self.date_of_birth
         return age
 
     def estimated_max_hr(self, age, sex):
@@ -62,6 +52,5 @@ class Person:
             max_hr_calc = 223 - 0.9 * age
         elif sex == "female":
             max_hr_calc = 226 - 1.0 * age
-
         return max_hr_calc
 

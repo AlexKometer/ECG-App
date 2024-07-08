@@ -1,3 +1,34 @@
+"""
+
+
+- tests zu personen hinzufügen
+- berechtigungen von personen ändern (sieht nur selbst angelegte subjects)
+- admin kann alle subjects sehen
+- admin kann alle subjects bearbeiten
+- admin kann alle subjects löschen
+- admin kann anderen usern berechtigungen für subjects ändern
+
+
+i got this roadmap:
+i want following features to implement to this Programm:
+- have different users(custom users and 1 admin)
+--login page for the users and the admin
+--custom users can see the 3 basic subjects and the subjects they add
+--admin can see all subjects
+--noone can edit the 3 basic subjects
+-- only the admin can edit and delete all added users
+--custom users can only edit and delete their own subjects
+-- it should be able to add tests to the subjects
+
+- i want to make a HRV analysis for the ECG data
+-i want to enable an other file input from other file formates like .fit files
+"""
+
+
+"""
+json backup:
+
+
 [
     {
         "id": 1,
@@ -68,4 +99,4 @@
         "ekg_tests": [],
         "owner": "Alex"
     }
-]
+]"""

@@ -4,7 +4,7 @@ import hashlib
 import os
 
 # Path to the users.json file
-USERS_FILE_PATH = os.path.join(os.path.dirname(__file__), 'users.json')
+USERS_FILE_PATH = os.path.join(os.path.dirname(__file__), 'data/users.json')
 
 
 # Function to hash passwords

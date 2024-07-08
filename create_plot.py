@@ -1,17 +1,6 @@
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import scipy as sc
 import plotly.express as px
 import plotly.graph_objects as go
-import plotly.subplots as sp
-from PIL import Image
 import streamlit as st
-import os
-import time
-import json
-#from file_input import load_person_data, get_person_list, get_image_path, get_ecg_path, read_ecg_data
-
 
 # Make ECG plot with the possibility to mark peaks
 def ecg_plot(df_ecg_data, peaks, checkbox_mark_peaks, sf):

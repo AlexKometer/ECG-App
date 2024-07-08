@@ -1,0 +1,24 @@
+[
+    {
+        "username": "Alex",
+        "password": "dbadfc88144b0c153a2d1bdf154681c857a237eb79d58df24e918bca6e17db05",
+        "role": "custom",
+        "subjects": []
+    },
+    {
+        "username": "Admin",
+        "password": "b2d90fc93c4bf9a021d3074d67705dc024db0932bb188bca3303ea77e1a2d2bf",
+        "role": "admin",
+        "subjects": []
+    },
+    {
+        "username": "Georg",
+        "password": "a9980a231ab5a8fbef94a54e432fb72113fc385610f28a2a0995168b90df549d",
+        "role": "custom",
+        "subjects": [],
+        "permissions": [
+            "Kometer, Alexander",
+            "Sagenmeista, Georg"
+        ]
+    }
+]
