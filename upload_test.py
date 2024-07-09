@@ -17,7 +17,7 @@ def save_uploaded_file(uploaded_file, directory):
         return False
 
 
-def add_test(subject_id, uploaded_file, test_date):
+def add_test(subject_id, uploaded_file, test_date, test_types):
     person_dict = Person.load_person_data()
     max_id = 0
 
@@ -37,7 +37,8 @@ def add_test(subject_id, uploaded_file, test_date):
                 {
                     "id": new_test_id,
                     "date": test_date,
-                    "result_link": f"data/other_tests/{uploaded_file.name}"
+                    "result_link": f"data/other_tests/{uploaded_file.name}",
+                    "types": test_types  # Use test_types here
                 }
             )
             test_added = True
@@ -46,9 +47,9 @@ def add_test(subject_id, uploaded_file, test_date):
     if test_added:
         with open("data/person_db.json", 'w') as f:
             json.dump(person_dict, f, indent=4)
-        st.success("Der Test wurde erfolgreich hinzugefügt.")
+        st.success("The test was successfully added.")
     else:
-        st.error("Fehler: Subjekt-ID nicht gefunden.")
+        st.error("Error: Subject ID not found.")
 
 
 def is_valid_date(date_str):

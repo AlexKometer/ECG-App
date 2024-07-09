@@ -4,10 +4,10 @@ from PIL import Image
 from classes import Person
 from ecgdata import ECGdata
 from create_plot import ecg_plot
-from login import login, register
 import os
 import json
 import permissions  # Import the permissions module
+from login import authenticate, register_user
 from upload_test import add_test, save_uploaded_file, is_valid_date
 
 st.set_page_config(layout="wide")
@@ -27,30 +27,59 @@ if 'admin_mode' not in st.session_state:
 if 'upload_page' not in st.session_state:
     st.session_state['upload_page'] = False
 
+#Home-Screen
 def home():
     st.title("Welcome to ECG-APP")
+    st.write("Please use the sidebar to login or register.")
+    if st.session_state['user'] is None:
+        if st.session_state['show_register']:
+            sidebar_register()
+        else:
+            sidebar_login()
+    else:
+        st.sidebar.success("Logged in")
+
+#Login-page
+def sidebar_login():
+    st.sidebar.header("Login")
+    username = st.sidebar.text_input("Username")
+    password = st.sidebar.text_input("Password", type="password")
     if st.sidebar.button("Login"):
-        st.session_state['current_page'] = 'login'
-        st.rerun()
+        user = authenticate(username, password)
+        if user:
+            st.session_state['user'] = user
+            st.session_state['current_page'] = 'app'
+            st.rerun()
+        else:
+            st.sidebar.error("Invalid username or password")
     if st.sidebar.button("Register"):
-        st.session_state['current_page'] = 'register'
+        st.session_state['show_register'] = True
         st.rerun()
 
-def login_page():
-    login()
-    if st.session_state['user'] is not None:
-        st.session_state['current_page'] = 'app'
+#Register -page
+def sidebar_register():
+    st.sidebar.header("Register")
+    username = st.sidebar.text_input("Username")
+    password = st.sidebar.text_input("Password", type="password")
+    role = ["user"]
+    if st.sidebar.button("Register"):
+        if register_user(username, password, role):
+            st.sidebar.success("User registered successfully!")
+            st.session_state['show_register'] = False
+            st.rerun()
+        else:
+            st.sidebar.error("Registration failed. Username may already be taken.")
+    if st.sidebar.button("Back to Login"):
+        st.session_state['show_register'] = False
         st.rerun()
 
 
-def register_page():
-    register()
-    if st.session_state['user'] is not None:
-        st.session_state['current_page'] = 'app'
-        st.rerun()
-
-
+#add new Subject
 def add_subject_page():
+    if st.session_state['user'] is None:
+        st.session_state['current_page'] = 'home'
+        st.rerun()
+
     st.title("Add New Subject")
 
     new_id = permissions.get_next_id()
@@ -84,54 +113,103 @@ def add_subject_page():
         st.rerun()
 
 
+#upload new Test
 def upload_page(subject_id):
     st.title("Upload New Test")
 
     uploaded_file = st.file_uploader("Choose a file", type=["fit", "txt", "csv"])
     test_date = st.text_input("Test Date (dd.mm.yyyy)")
+    test_types = st.multiselect("Test Type", ["EKG", "fit", "VO2max test", "power data", "other"])
 
     if st.button("Save Upload"):
-        if uploaded_file and is_valid_date(test_date):
+        if uploaded_file and is_valid_date(test_date) and test_types:
             save_directory = "data/other_tests/"
             if save_uploaded_file(uploaded_file, save_directory):
-                add_test(subject_id, uploaded_file, test_date)
+                add_test(subject_id, uploaded_file, test_date, test_types)  # Use test_types here
                 st.session_state['upload_page'] = False
                 st.session_state['current_page'] = 'app'
                 st.rerun()
         else:
-            st.error("Please upload a file and enter a valid date.")
+            st.error("Please upload a file, enter a valid date, and select at least one test type.")
 
+    if st.button("Cancel"):
+        st.session_state['upload_page'] = False
+        st.session_state['current_page'] = 'app'
+        st.rerun()
+
+
+
+#Infomation about the subject
 def subject_mode():
     user = st.session_state['user']
-    #st.title("ECG-APP")
-    #st.write(f"Logged in as {user['username']} ({user['role']})")
 
-    # Load basic data
     person_dict = Person.load_person_data()
-    person_names = Person.get_person_list(person_dict, user)  # Pass the current user to filter the list
+    print("Person dictionary:", person_dict)  # Debug print
 
-    sf_basic = 500
+    person_names = Person.get_person_list(person_dict, user)
+    print("Person names:", person_names)  # Debug print
 
-    # Sidebar
+    sf = 500
+
     st.sidebar.header("Navigation")
-    current_subject = st.sidebar.radio('Subject:', options=person_names, key="sbVersuchsperson")
+    if st.sidebar.button("Logout", key="logout_button"):
+        st.session_state['user'] = None
+        st.session_state['current_page'] = 'home'
+        st.rerun()
+
+    if st.sidebar.button("Add New Subject", key="add_subject_button"):
+        st.session_state['current_page'] = 'add_subject'
+        st.rerun()
+
+    current_subject = st.sidebar.selectbox('Subject:', options=person_names, key="sbVersuchsperson")
+    print("Current subject:", current_subject)  # Debug print
+
+    # Initialize subject to None
+    subject = None
+
     for entry in person_dict:
         if current_subject == entry["lastname"] + ", " + entry["firstname"]:
             subject = Person(entry)
 
-    if st.sidebar.button("Add New Subject"):
-        st.session_state['current_page'] = 'add_subject'
-        st.rerun()
+    if st.sidebar.button("Upload New Test", key="upload_test_button"):
+        if subject:
+            st.session_state['upload_page'] = True
+            st.session_state['subject_id'] = subject.id
+            st.rerun()
+
+    if subject is None:
+        st.write("No subject selected.")
+        return
 
     st.sidebar.write("")
     checkbox_mark_peaks = st.sidebar.checkbox("Mark Peaks", value=False, key="cbMarkPeaks")
 
     subject_ecg = subject.ecg_tests
+    print("Subject ECG tests:", subject_ecg)  # Debug print
+
+    # Always add General Information tab
+    tabs = ["General Information"]
+    added_tabs = set()  # Keep track of added tabs
 
     if subject_ecg:
-        tabs = ["General Information", "ECG", "HR Analysis", "HRV Analysis"]
-    else:
-        tabs = ["General Information"]
+        for test in subject_ecg:
+            for test_type in test["types"]:
+                if test_type == "EKG" and "ECG Data" not in added_tabs:
+                    tabs.extend(["Test Data", "ECG Data", "HRV Analysis"])
+                    added_tabs.update(["ECG Data", "HRV Analysis"])
+                elif test_type == "fit" and "Powercurve" not in added_tabs:
+                    tabs.extend(["Test Data", "Powercurve"])
+                    added_tabs.add("Powercurve")
+                elif test_type == "VO2max test" and "VO2max Analysis" not in added_tabs:
+                    tabs.extend(["Test Data", "VO2max Analysis"])
+                    added_tabs.add("VO2max Analysis")
+                elif test_type == "power data" and "Power Data" not in added_tabs:
+                    tabs.extend(["Test Data", "Power Data"])
+                    added_tabs.add("Power Data")
+                elif test_type == "other" and "Test Data" not in added_tabs:
+                    tabs.extend(["Test Data"])
+                    added_tabs.add("Test Data")
+                break
 
     selected_tab = st.tabs(tabs)
 
@@ -143,42 +221,51 @@ def subject_mode():
         st.write("The Year of Birth is: ", subject.date_of_birth)
         st.write("The age of the subject is: ", subject.calculate_person_age())
         st.write("")
-        st.write("### Number of ECGs: ", len(subject_ecg))
+        st.write("### Number of Tests: ", len(subject_ecg))
 
         for i in range(len(subject_ecg)):
             current_ecg = ECGdata(subject_ecg[i])
             st.write("")
             st.write("Test date: ", current_ecg.date, ":")
-            st.write("ECG " + str(i + 1) + ": ", current_ecg.data)
+            st.write("Test type: ", ", ".join(current_ecg.types), ":")
+            st.write("Test " + str(i + 1) + ": ", current_ecg.data)
             st.write("Length of the test in seconds: ",
                      int(np.round(len(ECGdata.read_ecg_data(current_ecg.data)) / 500, 0)))
 
-        # Add a button to navigate to the upload page
-        if st.button("Upload New Test"):
-            st.session_state['upload_page'] = True
-            st.session_state['subject_id'] = subject.id
-            st.rerun()
+    # Create a mapping of test type to tab index
+    tab_indices = {tab_name: index for index, tab_name in enumerate(tabs)}
 
-    if subject_ecg:
-        with selected_tab[1]:
-            list_of_paths = [element['result_link'] for element in subject_ecg]
-            selected_ecg_path = st.selectbox('ECG:', options=list_of_paths, key="sbECG")
-            if selected_ecg_path:
-                df_ecg_data = ECGdata.read_ecg_data(selected_ecg_path)
-                peaks = ECGdata.find_peaks(selected_ecg_path)
-                st.plotly_chart(ecg_plot(df_ecg_data, peaks, checkbox_mark_peaks, sf_basic))
+    peaks = None  # Initialize peaks
 
-                for element in subject_ecg:
-                    if selected_ecg_path == element['result_link']:
-                        ecg_date = element['date']
+    if "ECG Data" in tabs:
+        with selected_tab[tab_indices["ECG Data"]]:
+            print("Subject ECG tests for ECG Data tab:", subject_ecg)  # Debug print
+            list_of_paths = [element['result_link'] for element in subject_ecg if "EKG" in element["types"]]
+            print("List of paths for ECG Data:", list_of_paths)  # Debug print
 
-                st.write("This ecg was recorded on: ", ecg_date)
+            # Check if there are any paths and set a default selection
+            if list_of_paths:
+                selected_ecg_path = st.selectbox('ECG:', options=list_of_paths, index=0, key="sbECG")
+                print("Selected ECG path:", selected_ecg_path)  # Debug print
+                if selected_ecg_path:
+                    df_ecg_data = ECGdata.read_ecg_data(selected_ecg_path)
+                    peaks = ECGdata.find_peaks(selected_ecg_path)
+                    st.plotly_chart(ecg_plot(df_ecg_data, peaks, checkbox_mark_peaks, sf, key_suffix="ECG"))
+
+                    for element in subject_ecg:
+                        if selected_ecg_path == element['result_link']:
+                            ecg_date = element['date']
+
+                    st.write("This ECG was recorded on: ", ecg_date)
+                else:
+                    st.write("No ECG data available for this subject.")
             else:
                 st.write("No ECG data available for this subject.")
 
-        with selected_tab[2]:
-            st.write("This is tab 3")
-            if len(peaks[0]) > 0:  # Check if there are any peaks
+    if "HRV Analysis" in tabs:
+        with selected_tab[tab_indices["HRV Analysis"]]:
+            st.write("This is tab 4")
+            if peaks and len(peaks[0]) > 0:
                 hr, hr_max, hr_min, hr_mean = ECGdata.estimate_hr(peaks)
                 st.write("The maximum heart rate is: ", hr_max)
                 st.write("The minimum heart rate is: ", hr_min)
@@ -187,9 +274,7 @@ def subject_mode():
             else:
                 st.write("No ECG peaks data available for this subject.")
 
-        with selected_tab[3]:
-            if len(peaks[0]) > 0:  # Check if there are any peaks
-                st.write("This is tab 4")
+            if peaks and len(peaks[0]) > 0:
                 st.write("HRV Analysis")
                 hrv = ECGdata.calculate_hrv(peaks)
                 st.write("The SDNN is: ", hrv[0])
@@ -197,7 +282,29 @@ def subject_mode():
             else:
                 st.write("No ECG peaks data available for this subject.")
 
+    if "Powercurve" in tabs:
+        with selected_tab[tab_indices["Powercurve"]]:
+            st.write("Powercurve Analysis")
+            # Add your powercurve visualization code here
 
+    if "VO2max Analysis" in tabs:
+        with selected_tab[tab_indices["VO2max Analysis"]]:
+            st.write("VO2max Analysis")
+            # Add your VO2max analysis code here
+
+    if "Power Data" in tabs:
+        with selected_tab[tab_indices["Power Data"]]:
+            st.write("Power Data Analysis")
+            # Add your power data visualization code here
+
+    if "Test Data" in tabs and "General Information" not in tabs:
+        with selected_tab[tab_indices["Test Data"]]:
+            st.write("Other Test Data")
+            # Add other test data visualization code here
+
+
+
+#Admin User
 def admin_user_mode():
     st.title("User Editing Mode")
     tabs = st.tabs(["Permissions", "User Management", "Edit User Info"])
@@ -220,7 +327,6 @@ def admin_user_mode():
             ]
             current_permissions = permissions.get_user_permissions(selected_user)
 
-            # Filter current_permissions to ensure they are in permissions_list
             valid_current_permissions = [perm for perm in current_permissions if perm in permissions_list]
 
             new_permissions = st.multiselect("Permissions", options=permissions_list, default=valid_current_permissions)
@@ -288,7 +394,7 @@ def admin_user_mode():
                     st.success(f"Test {test['id']} deleted successfully!")
                     st.rerun()
 
-
+#Login - Logout
 def app():
     user = st.session_state['user']
     st.title("ECG-APP")
@@ -302,22 +408,25 @@ def app():
 
     if user['role'] == 'admin':
         st.sidebar.header("Admin Mode")
-        admin_mode = st.sidebar.toggle("Admin Mode", key="admin_mode", value=True)
+        admin_mode = st.sidebar.radio(
+            "Select Mode",
+            options=['Subject Mode', 'User Editing Mode'],
+            key='admin_mode'
+        )
 
-        if admin_mode == False:
+        if admin_mode == 'Subject Mode':
             subject_mode()
         else:
             admin_user_mode()
     else:
         subject_mode()
 
+
 # Page navigation
 if st.session_state['current_page'] == 'home':
     home()
-elif st.session_state['current_page'] == 'login':
-    login_page()
-elif st.session_state['current_page'] == 'register':
-    register_page()
+elif st.session_state['show_register']:
+    sidebar_register()
 elif st.session_state['current_page'] == 'add_subject':
     add_subject_page()
 elif st.session_state['current_page'] == 'app':
@@ -325,3 +434,5 @@ elif st.session_state['current_page'] == 'app':
         upload_page(st.session_state['subject_id'])
     else:
         app()
+else:
+    sidebar_login()

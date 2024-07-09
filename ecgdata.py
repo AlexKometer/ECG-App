@@ -12,7 +12,9 @@ class ECGdata:
         self.id = ecg_dict["id"]
         self.date = ecg_dict["date"]
         self.data = ecg_dict["result_link"]
+        self.types = ecg_dict.get("types", "other")  # Use type here
         self.df = pd.read_csv(self.data, sep='\t', header=None, names=['Messwerte in mV', 'Zeit in ms', ])
+
 
     def get_ecg_path(person, id):
         data = person.ecg_tests
@@ -41,7 +43,7 @@ class ECGdata:
 
     @staticmethod
     def estimate_hr(peaks):
-        if len(peaks[0]) > 0:  # Check if there are any peaks
+        if len(peaks[0]) > 0:
             peak_interval = np.diff(peaks[0])
             peak_interval_seconds = peak_interval / 1000
             hr = np.round(60 / peak_interval_seconds, 0)
@@ -53,7 +55,7 @@ class ECGdata:
 
     @staticmethod
     def calculate_hrv(peaks):
-        if len(peaks[0]) > 0:  # Check if there are any peaks
+        if len(peaks[0]) > 0:
             peak_interval = np.diff(peaks[0])
             peak_interval_seconds = peak_interval / 1000
             df = pd.DataFrame(peak_interval_seconds)

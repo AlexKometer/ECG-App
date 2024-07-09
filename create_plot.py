@@ -3,12 +3,12 @@ import plotly.graph_objects as go
 import streamlit as st
 
 # Make ECG plot with the possibility to mark peaks
-def ecg_plot(df_ecg_data, peaks, checkbox_mark_peaks, sf):
+def ecg_plot(df_ecg_data, peaks, checkbox_mark_peaks, sf, key_suffix=""):
     max_seconds = len(df_ecg_data) // sf
-    selected_area_start = 500 * st.number_input("Start of the selected area (in s) :", min_value=0,
-                                                max_value=max_seconds, value=0)
-    selected_area_end = (500 * st.number_input("End of the selected area (in s) :", min_value=0,
-                                               max_value=max_seconds, value=10))
+    selected_area_start = 500 * st.number_input(f"Start of the selected area (in s) :{key_suffix}", min_value=0,
+                                                max_value=max_seconds, value=0, key=f"start_area_{key_suffix}")
+    selected_area_end = (500 * st.number_input(f"End of the selected area (in s) :{key_suffix}", min_value=0,
+                                               max_value=max_seconds, value=10, key=f"end_area_{key_suffix}"))
 
     if selected_area_start < selected_area_end:
         filtered_df_ecg = df_ecg_data.iloc[selected_area_start:selected_area_end].copy()
