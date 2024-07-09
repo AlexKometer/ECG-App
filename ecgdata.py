@@ -64,30 +64,3 @@ class ECGdata:
             return SDNN, RMSSD
         return None, None
 
-    def plot_time_series(path, peaks):
-        df = ECGdata.read_ecg_data(path)
-        max_seconds = len(df) // 500
-        selected_area_start = 500 * st.sidebar.number_input("Start of the selected area (in s) :", min_value=0,
-                                                            max_value=max_seconds, value=0)
-        selected_area_end = (500 * st.sidebar.number_input("End of the selected area (in s) :", min_value=0,
-                                                           max_value=max_seconds, value=max_seconds))
-        if selected_area_start < selected_area_end:
-            filtered_df_ecg = df.iloc[selected_area_start:selected_area_end]
-            filtered_df_ecg["Zeit in s"] = filtered_df_ecg["Zeit in ms"] / 1000  # Scale x-axis to seconds
-            fig_ecg_marked = px.line(filtered_df_ecg, x="Zeit in s", y="Messwerte in mV")
-            fig_ecg_marked.update_layout(title="ECG Data", xaxis_title="Time in s", yaxis_title="Voltage in mV")
-        else:
-            st.error("Start value must be less than end value.")
-            fig_ecg_marked = px.line()
-
-        peak_indices = peaks[0]
-        filtered_peaks = [peak for peak in peak_indices if selected_area_start <= peak < selected_area_end]
-        if filtered_peaks:
-            peak_times = df.iloc[filtered_peaks]["Zeit in ms"].to_numpy() / 1000
-            peak_values = df.iloc[filtered_peaks]["Messwerte in mV"].to_numpy()
-            fig_ecg_marked.add_trace(go.Scatter(x=peak_times,
-                                                y=peak_values,
-                                                mode="markers",
-                                                marker=dict(size=10, color="red"),
-                                                name="Peak"))
-        st.plotly_chart(fig_ecg_marked)

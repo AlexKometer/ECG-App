@@ -54,17 +54,18 @@
         "date_of_birth": 1997,
         "firstname": "Alexander",
         "lastname": "Kometer",
-        "sex": "male",
         "picture_path": "data/pictures/Alexander_Kometer.jpg",
-        "ekg_tests": []
+        "sex": "male",
+        "ekg_tests": [],
+        "owner": ""
     },
     {
         "id": 5,
         "date_of_birth": 2010,
         "firstname": "Georg",
-        "lastname": "Sagenmeista",
-        "sex": "male",
+        "lastname": "Sagmeister",
         "picture_path": "data/pictures/Georg_Sagenmeista.jpg",
+        "sex": "male",
         "ekg_tests": [],
         "owner": "Alex"
     }

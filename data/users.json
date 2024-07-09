@@ -3,7 +3,10 @@
         "username": "Alex",
         "password": "dbadfc88144b0c153a2d1bdf154681c857a237eb79d58df24e918bca6e17db05",
         "role": "custom",
-        "subjects": []
+        "subjects": [],
+        "permissions": [
+            "Kometer, Alexander"
+        ]
     },
     {
         "username": "Admin",
@@ -17,7 +20,6 @@
         "role": "custom",
         "subjects": [],
         "permissions": [
-            "Kometer, Alexander",
             "Sagenmeista, Georg"
         ]
     }

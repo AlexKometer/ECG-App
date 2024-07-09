@@ -32,7 +32,7 @@ def login():
         if user:
             st.session_state['user'] = user
             st.session_state['current_page'] = 'app'
-            st.experimental_rerun()  # Trigger a rerun immediately after setting the page
+            st.rerun()  # Trigger a rerun immediately after setting the page
         else:
             st.error("Invalid username or password")
 
@@ -70,4 +70,4 @@ def register():
         register_user(username, password, role)
         st.session_state['user'] = authenticate(username, password)
         st.session_state['current_page'] = 'app'
-        st.experimental_rerun()  # Trigger a rerun immediately after setting the page
+        st.rerun()  # Trigger a rerun immediately after setting the page

@@ -55,3 +55,12 @@ def delete_user(username):
     user_data = load_user_data()
     user_data = [user for user in user_data if user['username'] != username]
     save_user_data(user_data)
+
+def update_subject(subject):
+    person_dict = Person.load_person_data()
+    for idx, entry in enumerate(person_dict):
+        if entry["id"] == subject.id:
+            person_dict[idx] = subject.to_dict()
+            break
+    with open('data/person_db.json', 'w') as f:
+        json.dump(person_dict, f, indent=4)

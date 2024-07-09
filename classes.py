@@ -54,3 +54,14 @@ class Person:
             max_hr_calc = 226 - 1.0 * age
         return max_hr_calc
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "date_of_birth": self.date_of_birth,
+            "firstname": self.firstname,
+            "lastname": self.lastname,
+            "picture_path": self.picture_path,
+            "sex": self.sex,
+            "ekg_tests": self.ecg_tests,
+            "owner": self.owner
+        }

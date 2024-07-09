@@ -8,10 +8,10 @@ def ecg_plot(df_ecg_data, peaks, checkbox_mark_peaks, sf):
     selected_area_start = 500 * st.number_input("Start of the selected area (in s) :", min_value=0,
                                                 max_value=max_seconds, value=0)
     selected_area_end = (500 * st.number_input("End of the selected area (in s) :", min_value=0,
-                                               max_value=max_seconds, value=max_seconds))
+                                               max_value=max_seconds, value=10))
 
     if selected_area_start < selected_area_end:
-        filtered_df_ecg = df_ecg_data.iloc[selected_area_start:selected_area_end]
+        filtered_df_ecg = df_ecg_data.iloc[selected_area_start:selected_area_end].copy()
         filtered_df_ecg["Zeit in s"] = filtered_df_ecg["Zeit in ms"] / 1000  # Scale x-axis to seconds
         fig_ecg_marked = px.line(filtered_df_ecg, x="Zeit in s", y="Messwerte in mV")
         fig_ecg_marked.update_layout(title="ECG Data", xaxis_title="Time in s", yaxis_title="Voltage in mV")
@@ -25,8 +25,8 @@ def ecg_plot(df_ecg_data, peaks, checkbox_mark_peaks, sf):
         # Filter peaks within the selected range
         filtered_peaks = [peak for peak in peak_indices if selected_area_start <= peak < selected_area_end]
         if filtered_peaks:
-            peak_times = df_ecg_data.iloc[filtered_peaks]["Zeit in ms"].to_numpy() / 1000
-            peak_values = df_ecg_data.iloc[filtered_peaks]["Messwerte in mV"].to_numpy()
+            peak_times = df_ecg_data.loc[filtered_peaks, "Zeit in ms"].to_numpy() / 1000
+            peak_values = df_ecg_data.loc[filtered_peaks, "Messwerte in mV"].to_numpy()
 
             fig_ecg_marked.add_trace(go.Scatter(x=peak_times,
                                                 y=peak_values,
