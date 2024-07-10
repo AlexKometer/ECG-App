@@ -24,7 +24,6 @@
                 ]
             }
         ]
-
     },
     {
         "id": 2,
@@ -69,7 +68,17 @@
         "lastname": "Kometer",
         "picture_path": "data/pictures/Alexander_Kometer.jpg",
         "sex": "male",
-        "ekg_tests": [],
+        "ekg_tests": [
+            {
+                "id": 5,
+                "date": "01.01.2024",
+                "result_link": "data/other_tests/long_endurance_ride.fit",
+                "types": [
+                    "fit",
+                    "power data"
+                ]
+            }
+        ],
         "owner": "Alex"
     },
     {

@@ -1,0 +1,6 @@
+[theme]
+primaryColor = "#ff7f0e"  # Orange color for buttons
+backgroundColor = "#d3d3d3"  # Lighter grey for background
+secondaryBackgroundColor = "#a9a9a9"  # Medium grey for sidebar
+textColor = "#000000"  # Black text
+font = "sans serif"  # Font type

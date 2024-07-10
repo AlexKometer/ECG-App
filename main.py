@@ -10,6 +10,8 @@ import permissions  # Import the permissions module
 from login import authenticate, register_user
 from upload_test import add_test, save_uploaded_file, is_valid_date
 
+
+
 st.set_page_config(layout="wide")
 
 # Secret credentials
@@ -73,7 +75,6 @@ def sidebar_register():
         st.session_state['show_register'] = False
         st.rerun()
 
-
 #add new Subject
 def add_subject_page():
     if st.session_state['user'] is None:
@@ -112,7 +113,6 @@ def add_subject_page():
         st.session_state['current_page'] = 'app'
         st.rerun()
 
-
 #upload new Test
 def upload_page(subject_id):
     st.title("Upload New Test")
@@ -137,17 +137,13 @@ def upload_page(subject_id):
         st.session_state['current_page'] = 'app'
         st.rerun()
 
-
-
 #Infomation about the subject
 def subject_mode():
     user = st.session_state['user']
 
     person_dict = Person.load_person_data()
-    print("Person dictionary:", person_dict)  # Debug print
 
     person_names = Person.get_person_list(person_dict, user)
-    print("Person names:", person_names)  # Debug print
 
     sf = 500
 
@@ -157,12 +153,11 @@ def subject_mode():
         st.session_state['current_page'] = 'home'
         st.rerun()
 
+    current_subject = st.sidebar.selectbox('Subject:', options=person_names, key="sbVersuchsperson")
+
     if st.sidebar.button("Add New Subject", key="add_subject_button"):
         st.session_state['current_page'] = 'add_subject'
         st.rerun()
-
-    current_subject = st.sidebar.selectbox('Subject:', options=person_names, key="sbVersuchsperson")
-    print("Current subject:", current_subject)  # Debug print
 
     # Initialize subject to None
     subject = None
@@ -171,21 +166,11 @@ def subject_mode():
         if current_subject == entry["lastname"] + ", " + entry["firstname"]:
             subject = Person(entry)
 
-    if st.sidebar.button("Upload New Test", key="upload_test_button"):
-        if subject:
-            st.session_state['upload_page'] = True
-            st.session_state['subject_id'] = subject.id
-            st.rerun()
-
     if subject is None:
         st.write("No subject selected.")
         return
 
-    st.sidebar.write("")
-    checkbox_mark_peaks = st.sidebar.checkbox("Mark Peaks", value=False, key="cbMarkPeaks")
-
     subject_ecg = subject.ecg_tests
-    print("Subject ECG tests:", subject_ecg)  # Debug print
 
     # Always add General Information tab
     tabs = ["General Information"]
@@ -194,9 +179,9 @@ def subject_mode():
     if subject_ecg:
         for test in subject_ecg:
             for test_type in test["types"]:
-                if test_type == "EKG" and "ECG Data" not in added_tabs:
-                    tabs.extend(["Test Data", "ECG Data", "HRV Analysis"])
-                    added_tabs.update(["ECG Data", "HRV Analysis"])
+                if test_type == "EKG" and "ECG" not in added_tabs:
+                    tabs.extend(["Test Data", "ECG"])
+                    added_tabs.update(["ECG"])
                 elif test_type == "fit" and "Powercurve" not in added_tabs:
                     tabs.extend(["Test Data", "Powercurve"])
                     added_tabs.add("Powercurve")
@@ -216,69 +201,76 @@ def subject_mode():
     with selected_tab[0]:
         st.write("#### General Information:", current_subject)
 
-        image = Image.open(subject.get_image_path())
-        st.image(image, caption=current_subject)
-        st.write("The Year of Birth is: ", subject.date_of_birth)
-        st.write("The age of the subject is: ", subject.calculate_person_age())
-        st.write("")
-        st.write("### Number of Tests: ", len(subject_ecg))
+        col1, col2 = st.columns([1, 2])  # Adjust the column width ratio as needed
 
-        for i in range(len(subject_ecg)):
-            current_ecg = ECGdata(subject_ecg[i])
-            st.write("")
-            st.write("Test date: ", current_ecg.date, ":")
-            st.write("Test type: ", ", ".join(current_ecg.types), ":")
-            st.write("Test " + str(i + 1) + ": ", current_ecg.data)
-            st.write("Length of the test in seconds: ",
-                     int(np.round(len(ECGdata.read_ecg_data(current_ecg.data)) / 500, 0)))
+        with col1:
+            image = Image.open(subject.get_image_path())
+            st.image(image, caption=current_subject)
+            st.markdown(f"**<u>Name:</u>** {current_subject}", unsafe_allow_html=True)
+            st.markdown(f"**<u>Year of Birth:</u>** <span style='color:black'>{subject.date_of_birth}</span>", unsafe_allow_html=True)
+            st.markdown(f"**<u>Age:</u>** <span style='color:black'>{subject.calculate_person_age()}</span>", unsafe_allow_html=True)
+            st.markdown(f"**<u>Sex:</u>** {subject.sex}", unsafe_allow_html=True)
+
+        with col2:
+            st.markdown(f"### Number of Tests: <span style='color:black'>{len(subject_ecg)}</span>", unsafe_allow_html=True)
+            for i in range(len(subject_ecg)):
+                current_ecg = ECGdata(subject_ecg[i])
+                st.write("")
+                st.markdown(f"**<u>Test date:</u>** {current_ecg.date}", unsafe_allow_html=True)
+                st.markdown(f"**<u>Test type:</u>** {', '.join(current_ecg.types)}", unsafe_allow_html=True)
+                st.markdown(f"**<u>Test {i + 1}:</u>** {current_ecg.data}", unsafe_allow_html=True)
+                st.markdown(f"**<u>Length of the test in seconds:</u>** <span style='color:black'>{int(np.round(len(ECGdata.read_ecg_data(current_ecg.data)) / 500, 0))}</span>", unsafe_allow_html=True)
+
+            if st.button("Upload New Test", key="upload_test_button"):
+                st.session_state['upload_page'] = True
+                st.session_state['subject_id'] = subject.id
+                st.rerun()
 
     # Create a mapping of test type to tab index
     tab_indices = {tab_name: index for index, tab_name in enumerate(tabs)}
 
     peaks = None  # Initialize peaks
 
-    if "ECG Data" in tabs:
-        with selected_tab[tab_indices["ECG Data"]]:
-            print("Subject ECG tests for ECG Data tab:", subject_ecg)  # Debug print
+    if "ECG" in tabs:
+        with selected_tab[tab_indices["ECG"]]:
             list_of_paths = [element['result_link'] for element in subject_ecg if "EKG" in element["types"]]
-            print("List of paths for ECG Data:", list_of_paths)  # Debug print
 
-            # Check if there are any paths and set a default selection
             if list_of_paths:
-                selected_ecg_path = st.selectbox('ECG:', options=list_of_paths, index=0, key="sbECG")
-                print("Selected ECG path:", selected_ecg_path)  # Debug print
-                if selected_ecg_path:
-                    df_ecg_data = ECGdata.read_ecg_data(selected_ecg_path)
-                    peaks = ECGdata.find_peaks(selected_ecg_path)
-                    st.plotly_chart(ecg_plot(df_ecg_data, peaks, checkbox_mark_peaks, sf, key_suffix="ECG"))
+                col1, col2 = st.columns([1, 4])  # Adjust the column width ratio as needed
 
-                    for element in subject_ecg:
-                        if selected_ecg_path == element['result_link']:
-                            ecg_date = element['date']
+                with col1:
+                    selected_ecg_path = st.selectbox('ECG:', options=list_of_paths, index=0, key="sbECG")
+                    if selected_ecg_path:
+                        df_ecg_data = ECGdata.read_ecg_data(selected_ecg_path)
+                        peaks = ECGdata.find_peaks(selected_ecg_path)
+                        selected_area_start = 500 * st.number_input("Start of the selected area (in s) :", min_value=0,
+                                                                    max_value=len(df_ecg_data) // sf, value=0, key="start_area")
+                        selected_area_end = 500 * st.number_input("End of the selected area (in s) :", min_value=0,
+                                                                  max_value=len(df_ecg_data) // sf, value=10, key="end_area")
+                        st.markdown(f"**<u>Length of the ECG:</u>** <span style='color:black'>{int(len(df_ecg_data) / 500)}</span> seconds", unsafe_allow_html=True)
+                        st.markdown(f"**<u>Test date:</u>** {next(element['date'] for element in subject_ecg if element['result_link'] == selected_ecg_path)}", unsafe_allow_html=True)
+                        checkbox_mark_peaks = st.checkbox("Mark Peaks", value=False, key="cbMarkPeaks")
 
-                    st.write("This ECG was recorded on: ", ecg_date)
-                else:
-                    st.write("No ECG data available for this subject.")
+                with col2:
+                    if selected_ecg_path:
+                        st.plotly_chart(ecg_plot(df_ecg_data, peaks, checkbox_mark_peaks, sf, selected_area_start, selected_area_end))
+
+                    st.markdown(f"**<u>This ECG was recorded on:</u>** {next(element['date'] for element in subject_ecg if element['result_link'] == selected_ecg_path)}", unsafe_allow_html=True)
             else:
                 st.write("No ECG data available for this subject.")
 
-    if "HRV Analysis" in tabs:
-        with selected_tab[tab_indices["HRV Analysis"]]:
-            st.write("This is tab 4")
+    if "Test Data" in tabs:
+        with selected_tab[tab_indices["Test Data"]]:
+            st.write("HRV Analysis")
             if peaks and len(peaks[0]) > 0:
                 hr, hr_max, hr_min, hr_mean = ECGdata.estimate_hr(peaks)
-                st.write("The maximum heart rate is: ", hr_max)
-                st.write("The minimum heart rate is: ", hr_min)
-                st.write("The mean heart rate is: ", hr_mean)
-                st.write("The estimated maximum heart rate is:", subject.max_hr)
-            else:
-                st.write("No ECG peaks data available for this subject.")
-
-            if peaks and len(peaks[0]) > 0:
-                st.write("HRV Analysis")
+                st.markdown(f"**<u>The maximum heart rate is:</u>** <span style='color:black'>{hr_max}</span>", unsafe_allow_html=True)
+                st.markdown(f"**<u>The minimum heart rate is:</u>** <span style='color:black'>{hr_min}</span>", unsafe_allow_html=True)
+                st.markdown(f"**<u>The mean heart rate is:</u>** <span style='color:black'>{hr_mean}</span>", unsafe_allow_html=True)
+                st.markdown(f"**<u>The estimated maximum heart rate is:</u>** <span style='color:black'>{subject.max_hr}</span>", unsafe_allow_html=True)
                 hrv = ECGdata.calculate_hrv(peaks)
-                st.write("The SDNN is: ", hrv[0])
-                st.write("The RMSSD is: ", hrv[1])
+                st.markdown(f"**<u>The SDNN is:</u>** <span style='color:black'>{hrv[0]}</span>", unsafe_allow_html=True)
+                st.markdown(f"**<u>The RMSSD is:</u>** <span style='color:black'>{hrv[1]}</span>", unsafe_allow_html=True)
             else:
                 st.write("No ECG peaks data available for this subject.")
 
@@ -301,8 +293,6 @@ def subject_mode():
         with selected_tab[tab_indices["Test Data"]]:
             st.write("Other Test Data")
             # Add other test data visualization code here
-
-
 
 #Admin User
 def admin_user_mode():
@@ -400,11 +390,7 @@ def app():
     st.title("ECG-APP")
     st.write(f"Logged in as {user['username']} ({user['role']})")
 
-    # Logout button
-    if st.button("Logout"):
-        st.session_state['user'] = None
-        st.session_state['current_page'] = 'home'
-        st.rerun()
+
 
     if user['role'] == 'admin':
         st.sidebar.header("Admin Mode")

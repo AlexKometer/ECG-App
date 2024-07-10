@@ -3,18 +3,21 @@ import plotly.graph_objects as go
 import streamlit as st
 
 # Make ECG plot with the possibility to mark peaks
-def ecg_plot(df_ecg_data, peaks, checkbox_mark_peaks, sf, key_suffix=""):
-    max_seconds = len(df_ecg_data) // sf
-    selected_area_start = 500 * st.number_input(f"Start of the selected area (in s) :{key_suffix}", min_value=0,
-                                                max_value=max_seconds, value=0, key=f"start_area_{key_suffix}")
-    selected_area_end = (500 * st.number_input(f"End of the selected area (in s) :{key_suffix}", min_value=0,
-                                               max_value=max_seconds, value=10, key=f"end_area_{key_suffix}"))
+def ecg_plot(df_ecg_data, peaks, checkbox_mark_peaks, sf, selected_area_start, selected_area_end):
 
     if selected_area_start < selected_area_end:
         filtered_df_ecg = df_ecg_data.iloc[selected_area_start:selected_area_end].copy()
         filtered_df_ecg["Zeit in s"] = filtered_df_ecg["Zeit in ms"] / 1000  # Scale x-axis to seconds
-        fig_ecg_marked = px.line(filtered_df_ecg, x="Zeit in s", y="Messwerte in mV")
-        fig_ecg_marked.update_layout(title="ECG Data", xaxis_title="Time in s", yaxis_title="Voltage in mV")
+        fig_ecg_marked = px.line(filtered_df_ecg, x="Zeit in s", y="Messwerte in mV" )
+        fig_ecg_marked.update_traces(line_color='#1E90FF', )
+        fig_ecg_marked.update_layout(
+            title="ECG Data",
+            xaxis_title="Time in s",
+            yaxis_title="Voltage in mV",
+            showlegend=False,
+            xaxis=dict(title_font=dict(color='black')),
+            yaxis=dict(title_font=dict(color='black'))
+        )
     else:
         st.error("Start value must be less than end value.")
         fig_ecg_marked = px.line()
@@ -31,7 +34,7 @@ def ecg_plot(df_ecg_data, peaks, checkbox_mark_peaks, sf, key_suffix=""):
             fig_ecg_marked.add_trace(go.Scatter(x=peak_times,
                                                 y=peak_values,
                                                 mode="markers",
-                                                marker=dict(size=10, color="red"),
+                                                marker=dict(size=10, color='#ff7f0e'),
                                                 name="Peak"))
     else:
         pass
