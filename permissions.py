@@ -9,9 +9,9 @@ def load_user_data():
             user_data = json.load(file)
         return user_data
     except json.JSONDecodeError:
-        return []  # Return an empty list if JSON is invalid or empty
+        return [] #Return an empty list if JSON is invalid or empty
 
- """Save the user data to the JSON file."""
+"""Save the user data to the JSON file."""
 def save_user_data(user_data):
 
     with open('data/users.json', 'w') as file:

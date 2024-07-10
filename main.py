@@ -9,7 +9,7 @@ import json
 import permissions  # Import the permissions module
 from login import authenticate, register_user
 from upload_test import add_test, save_uploaded_file, is_valid_date
-import FIT_import import main
+from FIT_import import main
 
 
 
