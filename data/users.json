@@ -5,7 +5,8 @@
         "role": "custom",
         "subjects": [],
         "permissions": [
-            "Kometer, Alexander"
+            "Kometer, Alexander",
+            "Volmer, Jasper"
         ]
     },
     {
@@ -20,7 +21,34 @@
         "role": "custom",
         "subjects": [],
         "permissions": [
-            "Sagenmeista, Georg"
+            "Sagmeister, Georg",
+            "Volmer, Jasper"
+        ]
+    },
+    {
+        "username": "Jasper",
+        "password": "d86922e53481a001c3c73d1f7cb2b2ef51adb6c148b8b8ebdbd24b194dcc176b",
+        "role": [
+            "user"
+        ],
+        "subjects": [],
+        "permissions": [
+            "Volmer, Jasper",
+            "Kometer, Alexander",
+            "Sagmeister, Georg"
+        ]
+    },
+    {
+        "username": "Julian",
+        "password": "b8392316a65d952f89f495b616eaf4829ee604cd39c3d424cd9164d75144c5d4",
+        "role": [
+            "user"
+        ],
+        "subjects": [],
+        "permissions": [
+            "Volmer, Jasper",
+            "Kometer, Alexander",
+            "Sagmeister, Georg"
         ]
     }
 ]

@@ -22,15 +22,6 @@
                 "types": [
                     "EKG"
                 ]
-            },
-            {
-                "id": 6,
-                "date": "01.02.2022",
-                "result_link": "data/other_tests/vo2_max_training.fit",
-                "types": [
-                    "fit",
-                    "power data"
-                ]
             }
         ]
     },
@@ -72,16 +63,34 @@
     },
     {
         "id": 4,
-        "date_of_birth": 1997,
-        "firstname": "Alexander",
-        "lastname": "Kometer",
-        "picture_path": "data/pictures/Alexander_Kometer.jpg",
+        "date_of_birth": 1990,
+        "firstname": "Jasper",
+        "lastname": "Volmer",
         "sex": "male",
+        "picture_path": "data/pictures/Jasper_Volmer.jpg",
         "ekg_tests": [
             {
                 "id": 5,
-                "date": "01.01.2024",
+                "date": "01.03.2023",
                 "result_link": "data/other_tests/long_endurance_ride.fit",
+                "types": [
+                    "fit",
+                    "power data"
+                ]
+            },
+            {
+                "id": 6,
+                "date": "05.06.2024",
+                "result_link": "data/other_tests/tempo_blocks_training.fit",
+                "types": [
+                    "fit",
+                    "power data"
+                ]
+            },
+            {
+                "id": 7,
+                "date": "01.01.2024",
+                "result_link": "data/other_tests/vo2_max_training.fit",
                 "types": [
                     "fit",
                     "power data"
@@ -92,11 +101,21 @@
     },
     {
         "id": 5,
-        "date_of_birth": 2010,
+        "date_of_birth": 1997,
+        "firstname": "Alexander",
+        "lastname": "Kometer",
+        "sex": "male",
+        "picture_path": "data/pictures/Alexander_Kometer.jpg",
+        "ekg_tests": [],
+        "owner": "Alex"
+    },
+    {
+        "id": 6,
+        "date_of_birth": 2003,
         "firstname": "Georg",
         "lastname": "Sagmeister",
-        "picture_path": "data/pictures/Georg_Sagenmeista.jpg",
         "sex": "male",
+        "picture_path": "data/pictures/Georg_Sagmeister.jpg",
         "ekg_tests": [],
         "owner": "Alex"
     }

@@ -169,6 +169,7 @@ def subject_mode():
     sf = 500
     st.sidebar.image("ECG App Logo.jpg", width=100)
     st.sidebar.header("Navigation")
+    st.sidebar.write(f"Logged in as {user['username']}")
     if st.sidebar.button("Logout", key="logout_button"):
         st.session_state['user'] = None
         st.session_state['current_page'] = 'home'
@@ -443,7 +444,7 @@ def admin_user_mode():
 def app():
     user = st.session_state['user']
     st.title("ECG-APP")
-    st.write(f"Logged in as {user['username']} ({user['role']})")
+
 
     if user['role'] == 'admin':
         st.sidebar.header("Admin Mode")
