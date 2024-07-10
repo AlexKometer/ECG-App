@@ -22,6 +22,15 @@
                 "types": [
                     "EKG"
                 ]
+            },
+            {
+                "id": 6,
+                "date": "01.02.2022",
+                "result_link": "data/other_tests/vo2_max_training.fit",
+                "types": [
+                    "fit",
+                    "power data"
+                ]
             }
         ]
     },

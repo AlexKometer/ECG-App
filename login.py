@@ -6,14 +6,14 @@ import os
 # Path to the users.json file
 USERS_FILE_PATH = os.path.join(os.path.dirname(__file__), 'data/users.json')
 
-"""encrypt the passwords"""
+#encrypt the passwords
 # Function to hash passwords
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 
 # Function to authenticate users
-"""checks if the user is registered and if the password is correct"""
+#checks if the user is registered and if the password is correct
 def authenticate(username, password):
     with open(USERS_FILE_PATH) as f:
         users = json.load(f)
@@ -24,7 +24,7 @@ def authenticate(username, password):
 
 
 # Function to handle user login
-"""grands access to the app"""
+#grands access to the app
 def login():
     st.title("Login")
     username = st.text_input("Username", key="login_username")
@@ -40,7 +40,7 @@ def login():
 
 
 # Function to handle user registration
-"""uptades the Databasse"""
+#uptades the Databasse
 def register_user(username, password, role):
     with open(USERS_FILE_PATH, 'r+') as f:
         users = json.load(f)
@@ -53,7 +53,7 @@ def register_user(username, password, role):
         f.seek(0)
         json.dump(users, f, indent=4)
 
-"""registers a new user to the app"""
+#registers a new user to the app
 def register():
     st.title("Register")
     username = st.text_input("New Username", key="register_username")

@@ -8,16 +8,15 @@ import datetime
 import streamlit as st
 import matplotlib.pyplot as plt
 
-st.set_page_config(layout="wide")
 
 
-"""reads a .csv-File"""
+#reads a .csv-File
 def read_my_csv(path):
     df = pd.read_csv(path, sep="\t", header=None)
     df.columns = ["Messwerte in mV", "Zeit in ms"]
     return df
 
-"""reads a .FIT-File"""
+#reads a .FIT-File
 def read_fit_file(file_path):
     fitfile = fitparse.FitFile(file_path)
 
@@ -68,7 +67,7 @@ def read_fit_file(file_path):
     return df, time, velocity, heartrate, distance, cadence, power, altitude
 
 
-"""creats the Power-Plot"""
+#creats the Power-Plot
 def make_plot_power(df_power, hr_max):
     # Create a plot with two y-axes
     fig = make_subplots(specs=[[{"secondary_y": True}]])
@@ -122,7 +121,7 @@ def make_plot_power(df_power, hr_max):
 
     return fig, zone_counts
 
-""""calculates the total elevation of the test"""
+#calculates the total elevation of the test
 def calculate_elevation_changes(df):
     altitude = df['Altitude']
     up = 0.0
@@ -136,19 +135,7 @@ def calculate_elevation_changes(df):
     return up, down
 
 
-"""plots the power"""
-def power_curve(power):
-    sorted_power_W = np.sort(power)
-    print(sorted_power_W)
-
-    plt.plot(sorted_power_W)
-    plt.title('Power Curve')
-    plt.xlabel('Time (s)')
-    plt.ylabel('Power (W)')
-    plt.savefig('power_curve.png')
-    plt.show()
-
-"""creat a table with a statistic of the test and plots the power and the heartrate"""
+#creat a table with a statistic of the test and plots the power and the heartrate
 def main(path):
     #file_path = "data/other_tests/tempo_blocks_training.fit"
     #file_path = "data/other_tests/tempo_blocks_training.fit"
@@ -163,7 +150,7 @@ def main(path):
 
     st.write("**Statistiken**")
     data = [
-        {"Metric": "Heartrate Max - calculation ", "Value": np.round(heartrate.max(), 1), "Unit": "bpm"} # max errechnete HF eintragen, Beistrich fehlt
+        {"Metric": "Heartrate Max - calculation ", "Value": np.round(heartrate.max(), 1), "Unit": "bpm"}, # max errechnete HF eintragen, Beistrich fehlt
         {"Metric": "Heartrate Max", "Value": np.round(heartrate.max(), 1), "Unit": "bpm"},
         {"Metric": "Heartrate Min", "Value": np.round(heartrate.min(), 1), "Unit": "bpm"},
         {"Metric": "Heartrate Mean", "Value": np.round(heartrate.mean(), 1), "Unit": "bpm"},
@@ -190,8 +177,6 @@ def main(path):
     fig, zone_counts = make_plot_power(df, hr_max)
     st.plotly_chart(fig)
 
-
-main()
 
 
 

@@ -9,9 +9,7 @@ import json
 import permissions  # Import the permissions module
 from login import authenticate, register_user
 from upload_test import add_test, save_uploaded_file, is_valid_date
-from FIT_import import main
-
-
+import fit_import
 
 st.set_page_config(layout="wide")
 
@@ -19,7 +17,7 @@ st.set_page_config(layout="wide")
 # ADMIN ACCOUNT: Username: Admin, Password: PycharmisLOVE!
 
 # Initialize session state
-"""Choose your mode"""
+# Choose your mode
 if 'user' not in st.session_state:
     st.session_state['user'] = None
 if 'show_register' not in st.session_state:
@@ -31,8 +29,9 @@ if 'admin_mode' not in st.session_state:
 if 'upload_page' not in st.session_state:
     st.session_state['upload_page'] = False
 
-#Home-Screen
-"""Homescrees where you have to login or register"""
+
+# Home-Screen
+# Homescrees where you have to login or register
 def home():
     st.title("Welcome to ECG-APP")
     st.write("Please use the sidebar to login or register.")
@@ -44,8 +43,9 @@ def home():
     else:
         st.sidebar.success("Logged in")
 
-#Login-page
-""" Login Sidebar"""
+
+# Login-page
+# Login Sidebar
 def sidebar_login():
     st.sidebar.header("Login")
     username = st.sidebar.text_input("Username")
@@ -62,8 +62,9 @@ def sidebar_login():
         st.session_state['show_register'] = True
         st.rerun()
 
-#Register -page
-"""Register Sidebar"""
+
+# Register -page
+# Register Sidebar
 def sidebar_register():
     st.sidebar.header("Register")
     username = st.sidebar.text_input("Username")
@@ -80,8 +81,9 @@ def sidebar_register():
         st.session_state['show_register'] = False
         st.rerun()
 
-#add new Subject
-"""add new Subject to the database"""
+
+# add new Subject
+# dd new Subject to the database
 def add_subject_page():
     if st.session_state['user'] is None:
         st.session_state['current_page'] = 'home'
@@ -119,14 +121,15 @@ def add_subject_page():
         st.session_state['current_page'] = 'app'
         st.rerun()
 
-#upload new Test
-"""add new Test to a User, the test will be uploadet to the database, the file-path is added to the subject"""
+
+# upload new Test
+# add new Test to a User, the test will be uploadet to the database, the file-path is added to the subject
 def upload_page(subject_id):
     st.title("Upload New Test")
 
     uploaded_file = st.file_uploader("Choose a file", type=["fit", "txt", "csv"])
     test_date = st.text_input("Test Date (dd.mm.yyyy)")
-    test_types = st.multiselect("Test Type", ["EKG", "fit", "VO2max test", "power data", "other"])
+    test_types = st.multiselect("Test Type", ["EKG", "fit", "power data"])
 
     if st.button("Save Upload"):
         if uploaded_file and is_valid_date(test_date) and test_types:
@@ -144,8 +147,12 @@ def upload_page(subject_id):
         st.session_state['current_page'] = 'app'
         st.rerun()
 
-#Infomation about the subject
-"""all information about the subject is shown here"""
+
+
+# Infomation about the subject
+# all information about the subject is shown here
+
+
 def subject_mode():
     user = st.session_state['user']
 
@@ -187,21 +194,12 @@ def subject_mode():
     if subject_ecg:
         for test in subject_ecg:
             for test_type in test["types"]:
-                if test_type == "EKG" and "ECG" not in added_tabs:
-                    tabs.extend(["Test Data", "ECG"])
-                    added_tabs.update(["ECG"])
-                elif test_type == "fit" and "Powercurve" not in added_tabs:
-                    tabs.extend(["Test Data", "Powercurve"])
-                    added_tabs.add("Powercurve")
-                elif test_type == "VO2max test" and "VO2max Analysis" not in added_tabs:
-                    tabs.extend(["Test Data", "VO2max Analysis"])
-                    added_tabs.add("VO2max Analysis")
-                elif test_type == "power data" and "Power Data" not in added_tabs:
-                    tabs.extend(["Test Data", "Power Data"])
-                    added_tabs.add("Power Data")
-                elif test_type == "other" and "Test Data" not in added_tabs:
-                    tabs.extend(["Test Data"])
-                    added_tabs.add("Test Data")
+                if test_type == "EKG" and "ECG Test Data" not in added_tabs:
+                    tabs.extend(["ECG Test Data", "ECG Plots"])
+                    added_tabs.update(["ECG Test Data", "ECG Plots"])
+                elif test_type == "fit" and "FIT Test Data" not in added_tabs:
+                    tabs.extend(["FIT Test Data", "FIT Plots"])
+                    added_tabs.update(["FIT Test Data", "FIT Plots"])
                 break
 
     selected_tab = st.tabs(tabs)
@@ -239,71 +237,71 @@ def subject_mode():
 
     peaks = None  # Initialize peaks
 
-    if "ECG" in tabs:
-        with selected_tab[tab_indices["ECG"]]:
+    if "ECG Test Data" in tabs:
+        with selected_tab[tab_indices["ECG Test Data"]]:
             list_of_paths = [element['result_link'] for element in subject_ecg if "EKG" in element["types"]]
 
+            if list_of_paths:
+                selected_ecg_path = st.selectbox('ECG:', options=list_of_paths, index=0, key="sbECG")
+                if selected_ecg_path:
+                    df_ecg_data = ECGdata.read_ecg_data(selected_ecg_path)
+                    peaks = ECGdata.find_peaks(selected_ecg_path)
+                    st.markdown(f"**<u>Length of the ECG:</u>** <span style='color:black'>{int(len(df_ecg_data) / 500)}</span> seconds", unsafe_allow_html=True)
+                    st.markdown(f"**<u>Test date:</u>** {next(element['date'] for element in subject_ecg if element['result_link'] == selected_ecg_path)}", unsafe_allow_html=True)
+                    checkbox_mark_peaks = st.checkbox("Mark Peaks", value=False, key="cbMarkPeaks")
+
+    if "ECG Plots" in tabs:
+        with selected_tab[tab_indices["ECG Plots"]]:
             if list_of_paths:
                 col1, col2 = st.columns([1, 4])  # Adjust the column width ratio as needed
 
                 with col1:
-                    selected_ecg_path = st.selectbox('ECG:', options=list_of_paths, index=0, key="sbECG")
                     if selected_ecg_path:
-                        df_ecg_data = ECGdata.read_ecg_data(selected_ecg_path)
-                        peaks = ECGdata.find_peaks(selected_ecg_path)
                         selected_area_start = 500 * st.number_input("Start of the selected area (in s) :", min_value=0,
                                                                     max_value=len(df_ecg_data) // sf, value=0, key="start_area")
                         selected_area_end = 500 * st.number_input("End of the selected area (in s) :", min_value=0,
                                                                   max_value=len(df_ecg_data) // sf, value=10, key="end_area")
-                        st.markdown(f"**<u>Length of the ECG:</u>** <span style='color:black'>{int(len(df_ecg_data) / 500)}</span> seconds", unsafe_allow_html=True)
-                        st.markdown(f"**<u>Test date:</u>** {next(element['date'] for element in subject_ecg if element['result_link'] == selected_ecg_path)}", unsafe_allow_html=True)
-                        checkbox_mark_peaks = st.checkbox("Mark Peaks", value=False, key="cbMarkPeaks")
 
                 with col2:
                     if selected_ecg_path:
                         st.plotly_chart(ecg_plot(df_ecg_data, peaks, checkbox_mark_peaks, sf, selected_area_start, selected_area_end))
-
-                    st.markdown(f"**<u>This ECG was recorded on:</u>** {next(element['date'] for element in subject_ecg if element['result_link'] == selected_ecg_path)}", unsafe_allow_html=True)
+                        st.markdown(f"**<u>This ECG was recorded on:</u>** {next(element['date'] for element in subject_ecg if element['result_link'] == selected_ecg_path)}", unsafe_allow_html=True)
             else:
                 st.write("No ECG data available for this subject.")
 
-    if "Test Data" in tabs:
-        with selected_tab[tab_indices["Test Data"]]:
-            st.write("HRV Analysis")
-            if peaks and len(peaks[0]) > 0:
-                hr, hr_max, hr_min, hr_mean = ECGdata.estimate_hr(peaks)
-                st.markdown(f"**<u>The maximum heart rate is:</u>** <span style='color:black'>{hr_max}</span>", unsafe_allow_html=True)
-                st.markdown(f"**<u>The minimum heart rate is:</u>** <span style='color:black'>{hr_min}</span>", unsafe_allow_html=True)
-                st.markdown(f"**<u>The mean heart rate is:</u>** <span style='color:black'>{hr_mean}</span>", unsafe_allow_html=True)
-                st.markdown(f"**<u>The estimated maximum heart rate is:</u>** <span style='color:black'>{subject.max_hr}</span>", unsafe_allow_html=True)
-                hrv = ECGdata.calculate_hrv(peaks)
-                st.markdown(f"**<u>The SDNN is:</u>** <span style='color:black'>{hrv[0]}</span>", unsafe_allow_html=True)
-                st.markdown(f"**<u>The RMSSD is:</u>** <span style='color:black'>{hrv[1]}</span>", unsafe_allow_html=True)
-            else:
-                st.write("No ECG peaks data available for this subject.")
+    if "FIT Test Data" in tabs:
+        with selected_tab[tab_indices["FIT Test Data"]]:
+            list_of_paths = [element['result_link'] for element in subject_ecg if "fit" in element["types"]]
 
-    if "Powercurve" in tabs:
-        with selected_tab[tab_indices["Powercurve"]]:
-            st.write("Powercurve Analysis")
-            # Add your powercurve visualization code here
+            if list_of_paths:
+                selected_fit_path = st.selectbox('FIT file:', options=list_of_paths, index=0, key="sbFIT")
+                if selected_fit_path:
+                    fit_import.main(selected_fit_path)
 
-    if "VO2max Analysis" in tabs:
-        with selected_tab[tab_indices["VO2max Analysis"]]:
-            st.write("VO2max Analysis")
-            # Add your VO2max analysis code here
+    if "FIT Plots" in tabs:
+        with selected_tab[tab_indices["FIT Plots"]]:
+            list_of_paths = [element['result_link'] for element in subject_ecg if "fit" in element["types"]]
 
-    if "Power Data" in tabs:
-        with selected_tab[tab_indices["Power Data"]]:
-            st.write("Power Data Analysis")
-            # Add your power data visualization code here
+            if list_of_paths:
+                selected_fit_path = st.selectbox('FIT file:', options=list_of_paths, index=0, key="sbFITPower")
+                if selected_fit_path:
+                    df_fit_data, time, velocity, heartrate, distance, cadence, power, altitude = fit_import.read_fit_file(selected_fit_path)
+                    hr_max = st.number_input("Max HR", value=heartrate.max())
+                    fig, zone_counts = fit_import.make_plot_power(df_fit_data, hr_max)
+                    st.plotly_chart(fig)
 
     if "Test Data" in tabs and "General Information" not in tabs:
         with selected_tab[tab_indices["Test Data"]]:
             st.write("Other Test Data")
             # Add other test data visualization code here
 
-#Admin User
-"""Admin Mode: you can edit permissions, users and tests"""
+
+
+
+
+# Admin Mode: you can edit permissions, users and tests
+
+
 def admin_user_mode():
     st.title("User Editing Mode")
     tabs = st.tabs(["Permissions", "User Management", "Edit User Info"])
@@ -393,13 +391,12 @@ def admin_user_mode():
                     st.success(f"Test {test['id']} deleted successfully!")
                     st.rerun()
 
-#Login - Logout
+
+# Login - Logout
 def app():
     user = st.session_state['user']
     st.title("ECG-APP")
     st.write(f"Logged in as {user['username']} ({user['role']})")
-
-
 
     if user['role'] == 'admin':
         st.sidebar.header("Admin Mode")

@@ -3,7 +3,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 # Make ECG plot with the possibility to mark peaks
-"""plots the ECG and marks the peaks"""
+#plots the ECG and marks the peaks
 def ecg_plot(df_ecg_data, peaks, checkbox_mark_peaks, sf, selected_area_start, selected_area_end):
 
     if selected_area_start < selected_area_end:
@@ -41,3 +41,4 @@ def ecg_plot(df_ecg_data, peaks, checkbox_mark_peaks, sf, selected_area_start, s
         pass
 
     return fig_ecg_marked
+

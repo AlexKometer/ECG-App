@@ -1,7 +1,6 @@
 import json
 from datetime import datetime
-import os
-"""Class for the Person-Object"""
+
 class Person:
     DEFAULT_SUBJECT_IDS = {1, 2, 3}  # IDs of the subjects that are accessible to all users
 

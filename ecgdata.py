@@ -7,15 +7,17 @@ import plotly.graph_objects as go
 from classes import Person
 import pyhrv.time_domain as td
 
-"""Class for all tests"""
 class ECGdata:
     def __init__(self, ecg_dict):
         self.id = ecg_dict["id"]
         self.date = ecg_dict["date"]
         self.data = ecg_dict["result_link"]
-        self.types = ecg_dict.get("types", "other")  # Use type here
-        self.df = pd.read_csv(self.data, sep='\t', header=None, names=['Messwerte in mV', 'Zeit in ms', ])
+        self.types = ecg_dict.get("types", ["other"])
 
+        if "EKG" in self.types:
+            self.df = pd.read_csv(self.data, sep='\t', header=None, names=['Messwerte in mV', 'Zeit in ms'])
+        else:
+            self.df = None  # FIT files or other non-ECG files should not be read as text
 
     def get_ecg_path(person, id):
         data = person.ecg_tests
@@ -66,4 +68,3 @@ class ECGdata:
             RMSSD = np.round(time_domain_results['rmssd'], 1)
             return SDNN, RMSSD
         return None, None
-
