@@ -39,31 +39,11 @@ def read_fit_file(file_path):
             elif record_data.name == 'altitude':
                 altitude = np.append(altitude, record_data.value)
 
-    return time, velocity, heartrate, distance, cadence, power, altitude
+    time_s = np.array([], dtype=np.int64)
+    for i in range(len(time)):
+        time_s = np.append(time_s, i)
 
-
-def calculate_elevation_changes(altitude):
-    up = 0.0
-    down = 0.0
-    for i in range(1, len(altitude)):
-        elevation_change = altitude[i] - altitude[i - 1]
-        if elevation_change > 0:
-            up += elevation_change
-        else:
-            down += abs(elevation_change)
-    return up, down
-
-
-def power_curve(power):
-    sorted_power_W = np.sort(power)
-    print(sorted_power_W)
-
-    plt.plot(sorted_power_W)
-    plt.title('Power Curve')
-    plt.xlabel('Time (s)')
-    plt.ylabel('Power (W)')
-    plt.savefig('power_curve.png')
-    plt.show()
+    time = time_s
 
 
 def find_best_effort(df):
