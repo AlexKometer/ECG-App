@@ -4,7 +4,7 @@ import json
 from classes import Person
 from datetime import datetime
 
-
+"""saving a new uploaded file"""
 def save_uploaded_file(uploaded_file, directory):
     try:
         if not os.path.exists(directory):
@@ -16,7 +16,7 @@ def save_uploaded_file(uploaded_file, directory):
         st.error(f"Fehler beim Speichern der Datei: {e}")
         return False
 
-
+""" adding the test to a subject"""
 def add_test(subject_id, uploaded_file, test_date, test_types):
     person_dict = Person.load_person_data()
     max_id = 0
@@ -51,7 +51,7 @@ def add_test(subject_id, uploaded_file, test_date, test_types):
     else:
         st.error("Error: Subject ID not found.")
 
-
+"""checks if the date-format is valid"""
 def is_valid_date(date_str):
     try:
         datetime.strptime(date_str, '%d.%m.%Y')

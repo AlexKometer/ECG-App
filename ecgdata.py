@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 from classes import Person
 import pyhrv.time_domain as td
 
+"""Class for all tests"""
 class ECGdata:
     def __init__(self, ecg_dict):
         self.id = ecg_dict["id"]

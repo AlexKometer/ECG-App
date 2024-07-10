@@ -9,6 +9,7 @@ import json
 import permissions  # Import the permissions module
 from login import authenticate, register_user
 from upload_test import add_test, save_uploaded_file, is_valid_date
+import FIT_import import main
 
 
 
@@ -18,6 +19,7 @@ st.set_page_config(layout="wide")
 # ADMIN ACCOUNT: Username: Admin, Password: PycharmisLOVE!
 
 # Initialize session state
+"""Choose your mode"""
 if 'user' not in st.session_state:
     st.session_state['user'] = None
 if 'show_register' not in st.session_state:
@@ -30,6 +32,7 @@ if 'upload_page' not in st.session_state:
     st.session_state['upload_page'] = False
 
 #Home-Screen
+"""Homescrees where you have to login or register"""
 def home():
     st.title("Welcome to ECG-APP")
     st.write("Please use the sidebar to login or register.")
@@ -42,6 +45,7 @@ def home():
         st.sidebar.success("Logged in")
 
 #Login-page
+""" Login Sidebar"""
 def sidebar_login():
     st.sidebar.header("Login")
     username = st.sidebar.text_input("Username")
@@ -59,6 +63,7 @@ def sidebar_login():
         st.rerun()
 
 #Register -page
+"""Register Sidebar"""
 def sidebar_register():
     st.sidebar.header("Register")
     username = st.sidebar.text_input("Username")
@@ -76,6 +81,7 @@ def sidebar_register():
         st.rerun()
 
 #add new Subject
+"""add new Subject to the database"""
 def add_subject_page():
     if st.session_state['user'] is None:
         st.session_state['current_page'] = 'home'
@@ -114,6 +120,7 @@ def add_subject_page():
         st.rerun()
 
 #upload new Test
+"""add new Test to a User, the test will be uploadet to the database, the file-path is added to the subject"""
 def upload_page(subject_id):
     st.title("Upload New Test")
 
@@ -138,6 +145,7 @@ def upload_page(subject_id):
         st.rerun()
 
 #Infomation about the subject
+"""all information about the subject is shown here"""
 def subject_mode():
     user = st.session_state['user']
 
@@ -295,6 +303,7 @@ def subject_mode():
             # Add other test data visualization code here
 
 #Admin User
+"""Admin Mode: you can edit permissions, users and tests"""
 def admin_user_mode():
     st.title("User Editing Mode")
     tabs = st.tabs(["Permissions", "User Management", "Edit User Info"])
