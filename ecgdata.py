@@ -6,18 +6,18 @@ import streamlit as st
 import plotly.graph_objects as go
 from classes import Person
 import pyhrv.time_domain as td
+import fit_import  # Import the fit_import module
 
 class ECGdata:
     def __init__(self, ecg_dict):
         self.id = ecg_dict["id"]
         self.date = ecg_dict["date"]
         self.data = ecg_dict["result_link"]
-        self.types = ecg_dict.get("types", ["other"])
-
+        self.types = ecg_dict.get("types", ["other"])  # Use types here
         if "EKG" in self.types:
-            self.df = pd.read_csv(self.data, sep='\t', header=None, names=['Messwerte in mV', 'Zeit in ms'])
+            self.df = pd.read_csv(self.data, sep='\t', header=None, names=['Messwerte in mV', 'Zeit in ms', ])
         else:
-            self.df = None  # FIT files or other non-ECG files should not be read as text
+            self.df = None
 
     def get_ecg_path(person, id):
         data = person.ecg_tests

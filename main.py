@@ -34,7 +34,17 @@ if 'upload_page' not in st.session_state:
 # Homescrees where you have to login or register
 def home():
     st.title("Welcome to ECG-APP")
-    st.write("Please use the sidebar to login or register.")
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        st.image("ECG App Logo.jpg", width=500)
+    with col2:
+        st.write("This App was designed by the students of the course 'Programming Exercise 2' at the **<u>MCI</u>**",
+                 unsafe_allow_html=True)
+        st.write("**<u>Authors: Alexander Kometer, Georg Sagmeister</u>**", unsafe_allow_html=True)
+        st.write("")
+        st.write(
+            "**<u>Note:</u>** For our Professors, we already have accounts for you. Please look up in the README.md file for the credentials.",
+            unsafe_allow_html=True)
     if st.session_state['user'] is None:
         if st.session_state['show_register']:
             sidebar_register()
@@ -148,11 +158,7 @@ def upload_page(subject_id):
         st.rerun()
 
 
-
-# Infomation about the subject
 # all information about the subject is shown here
-
-
 def subject_mode():
     user = st.session_state['user']
 
@@ -161,7 +167,7 @@ def subject_mode():
     person_names = Person.get_person_list(person_dict, user)
 
     sf = 500
-
+    st.sidebar.image("ECG App Logo.jpg", width=100)
     st.sidebar.header("Navigation")
     if st.sidebar.button("Logout", key="logout_button"):
         st.session_state['user'] = None
@@ -213,19 +219,27 @@ def subject_mode():
             image = Image.open(subject.get_image_path())
             st.image(image, caption=current_subject)
             st.markdown(f"**<u>Name:</u>** {current_subject}", unsafe_allow_html=True)
-            st.markdown(f"**<u>Year of Birth:</u>** <span style='color:black'>{subject.date_of_birth}</span>", unsafe_allow_html=True)
-            st.markdown(f"**<u>Age:</u>** <span style='color:black'>{subject.calculate_person_age()}</span>", unsafe_allow_html=True)
+            st.markdown(f"**<u>Year of Birth:</u>** <span style='color:black'>{subject.date_of_birth}</span>",
+                        unsafe_allow_html=True)
+            st.markdown(f"**<u>Age:</u>** <span style='color:black'>{subject.calculate_person_age()}</span>",
+                        unsafe_allow_html=True)
             st.markdown(f"**<u>Sex:</u>** {subject.sex}", unsafe_allow_html=True)
 
         with col2:
-            st.markdown(f"### Number of Tests: <span style='color:black'>{len(subject_ecg)}</span>", unsafe_allow_html=True)
+            st.markdown(f"### Number of Tests: <span style='color:black'>{len(subject_ecg)}</span>",
+                        unsafe_allow_html=True)
             for i in range(len(subject_ecg)):
                 current_ecg = ECGdata(subject_ecg[i])
                 st.write("")
                 st.markdown(f"**<u>Test date:</u>** {current_ecg.date}", unsafe_allow_html=True)
                 st.markdown(f"**<u>Test type:</u>** {', '.join(current_ecg.types)}", unsafe_allow_html=True)
                 st.markdown(f"**<u>Test {i + 1}:</u>** {current_ecg.data}", unsafe_allow_html=True)
-                st.markdown(f"**<u>Length of the test in seconds:</u>** <span style='color:black'>{int(np.round(len(ECGdata.read_ecg_data(current_ecg.data)) / 500, 0))}</span>", unsafe_allow_html=True)
+                if "EKG" in current_ecg.types:
+                    length = int(np.round(len(ECGdata.read_ecg_data(current_ecg.data)) / 500, 0))
+                else:
+                    length = "N/A"
+                st.markdown(f"**<u>Length of the test in seconds:</u>** <span style='color:black'>{length}</span>",
+                            unsafe_allow_html=True)
 
             if st.button("Upload New Test", key="upload_test_button"):
                 st.session_state['upload_page'] = True
@@ -242,66 +256,99 @@ def subject_mode():
             list_of_paths = [element['result_link'] for element in subject_ecg if "EKG" in element["types"]]
 
             if list_of_paths:
-                selected_ecg_path = st.selectbox('ECG:', options=list_of_paths, index=0, key="sbECG")
+                selected_ecg_path = st.selectbox('ECG:', options=list_of_paths, index=0, key="sbECGData")
                 if selected_ecg_path:
                     df_ecg_data = ECGdata.read_ecg_data(selected_ecg_path)
                     peaks = ECGdata.find_peaks(selected_ecg_path)
-                    st.markdown(f"**<u>Length of the ECG:</u>** <span style='color:black'>{int(len(df_ecg_data) / 500)}</span> seconds", unsafe_allow_html=True)
-                    st.markdown(f"**<u>Test date:</u>** {next(element['date'] for element in subject_ecg if element['result_link'] == selected_ecg_path)}", unsafe_allow_html=True)
-                    checkbox_mark_peaks = st.checkbox("Mark Peaks", value=False, key="cbMarkPeaks")
+                    st.markdown(
+                        f"**<u>Length of the ECG:</u>** <span style='color:black'>{int(len(df_ecg_data) / 500)}</span> seconds",
+                        unsafe_allow_html=True)
+                    st.markdown(
+                        f"**<u>Test date:</u>** {next(element['date'] for element in subject_ecg if element['result_link'] == selected_ecg_path)}",
+                        unsafe_allow_html=True)
+
+                    if peaks and len(peaks[0]) > 0:
+                        hr, hr_max, hr_min, hr_mean = ECGdata.estimate_hr(peaks)
+                        st.markdown(f"**<u>The maximum heart rate is:</u>** <span style='color:black'>{hr_max}</span>",
+                                    unsafe_allow_html=True)
+                        st.markdown(f"**<u>The minimum heart rate is:</u>** <span style='color:black'>{hr_min}</span>",
+                                    unsafe_allow_html=True)
+                        st.markdown(f"**<u>The mean heart rate is:</u>** <span style='color:black'>{hr_mean}</span>",
+                                    unsafe_allow_html=True)
+                        st.markdown(
+                            f"**<u>The estimated maximum heart rate is:</u>** <span style='color:black'>{subject.max_hr}</span>",
+                            unsafe_allow_html=True)
+                        hrv = ECGdata.calculate_hrv(peaks)
+                        st.markdown(f"**<u>The SDNN is:</u>** <span style='color:black'>{hrv[0]}</span>",
+                                    unsafe_allow_html=True)
+                        st.markdown(f"**<u>The RMSSD is:</u>** <span style='color:black'>{hrv[1]}</span>",
+                                    unsafe_allow_html=True)
+                    else:
+                        st.write("No ECG peaks data available for this subject.")
 
     if "ECG Plots" in tabs:
         with selected_tab[tab_indices["ECG Plots"]]:
+            list_of_paths = [element['result_link'] for element in subject_ecg if "EKG" in element["types"]]
+
             if list_of_paths:
-                col1, col2 = st.columns([1, 4])  # Adjust the column width ratio as needed
+                selected_ecg_path = st.selectbox('ECG:', options=list_of_paths, index=0, key="sbECGPlot")
+                if selected_ecg_path:
+                    df_ecg_data = ECGdata.read_ecg_data(selected_ecg_path)
+                    peaks = ECGdata.find_peaks(selected_ecg_path)
 
-                with col1:
-                    if selected_ecg_path:
+                    col1, col2 = st.columns([1, 4])  # Adjust the column width ratio as needed
+
+                    with col1:
                         selected_area_start = 500 * st.number_input("Start of the selected area (in s) :", min_value=0,
-                                                                    max_value=len(df_ecg_data) // sf, value=0, key="start_area")
+                                                                    max_value=len(df_ecg_data) // sf, value=0,
+                                                                    key="start_area")
                         selected_area_end = 500 * st.number_input("End of the selected area (in s) :", min_value=0,
-                                                                  max_value=len(df_ecg_data) // sf, value=10, key="end_area")
+                                                                  max_value=len(df_ecg_data) // sf, value=10,
+                                                                  key="end_area")
+                        checkbox_mark_peaks = st.checkbox("Mark Peaks", value=False, key="cbMarkPeaks")
 
-                with col2:
-                    if selected_ecg_path:
-                        st.plotly_chart(ecg_plot(df_ecg_data, peaks, checkbox_mark_peaks, sf, selected_area_start, selected_area_end))
-                        st.markdown(f"**<u>This ECG was recorded on:</u>** {next(element['date'] for element in subject_ecg if element['result_link'] == selected_ecg_path)}", unsafe_allow_html=True)
-            else:
-                st.write("No ECG data available for this subject.")
+                        st.markdown(
+                            f"**<u>Length of the ECG:</u>** <span style='color:black'>{int(len(df_ecg_data) / 500)}</span> seconds",
+                            unsafe_allow_html=True)
+                        st.markdown(
+                            f"**<u>Test date:</u>** {next(element['date'] for element in subject_ecg if element['result_link'] == selected_ecg_path)}",
+                            unsafe_allow_html=True)
+
+                    with col2:
+                        st.plotly_chart(ecg_plot(df_ecg_data, peaks, checkbox_mark_peaks, sf, selected_area_start,
+                                                 selected_area_end))
+                        st.markdown(
+                            f"**<u>This ECG was recorded on:</u>** {next(element['date'] for element in subject_ecg if element['result_link'] == selected_ecg_path)}",
+                            unsafe_allow_html=True)
 
     if "FIT Test Data" in tabs:
         with selected_tab[tab_indices["FIT Test Data"]]:
             list_of_paths = [element['result_link'] for element in subject_ecg if "fit" in element["types"]]
 
             if list_of_paths:
-                selected_fit_path = st.selectbox('FIT file:', options=list_of_paths, index=0, key="sbFIT")
+                selected_fit_path = st.selectbox('FIT:', options=list_of_paths, index=0, key="sbFITData")
                 if selected_fit_path:
-                    fit_import.main(selected_fit_path)
+                    fit_import.main(subject, selected_fit_path)
 
     if "FIT Plots" in tabs:
         with selected_tab[tab_indices["FIT Plots"]]:
             list_of_paths = [element['result_link'] for element in subject_ecg if "fit" in element["types"]]
 
             if list_of_paths:
-                selected_fit_path = st.selectbox('FIT file:', options=list_of_paths, index=0, key="sbFITPower")
+                selected_fit_path = st.selectbox('FIT:', options=list_of_paths, index=0, key="sbFITPlot")
                 if selected_fit_path:
-                    df_fit_data, time, velocity, heartrate, distance, cadence, power, altitude = fit_import.read_fit_file(selected_fit_path)
-                    hr_max = st.number_input("Max HR", value=heartrate.max())
-                    fig, zone_counts = fit_import.make_plot_power(df_fit_data, hr_max)
+
+                    df, time, velocity, heartrate, distance, cadence, power, altitude = fit_import.read_fit_file(
+                        selected_fit_path)
+                    if st.checkbox("Use manual max HR"):
+                        hr_max = st.number_input("Max HR", value=heartrate.max())
+                    else:
+                        hr_max = heartrate.max()
+                    fig, zone_counts = fit_import.make_plot_power(df, hr_max)
                     st.plotly_chart(fig)
-
-    if "Test Data" in tabs and "General Information" not in tabs:
-        with selected_tab[tab_indices["Test Data"]]:
-            st.write("Other Test Data")
-            # Add other test data visualization code here
-
-
-
 
 
 # Admin Mode: you can edit permissions, users and tests
-
-
 def admin_user_mode():
     st.title("User Editing Mode")
     tabs = st.tabs(["Permissions", "User Management", "Edit User Info"])

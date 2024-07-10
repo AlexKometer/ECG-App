@@ -6,6 +6,7 @@ import fitparse
 import numpy as np
 import datetime
 import streamlit as st
+import classes
 import matplotlib.pyplot as plt
 
 
@@ -136,21 +137,20 @@ def calculate_elevation_changes(df):
 
 
 #creat a table with a statistic of the test and plots the power and the heartrate
-def main(path):
-    #file_path = "data/other_tests/tempo_blocks_training.fit"
-    #file_path = "data/other_tests/tempo_blocks_training.fit"
+def main(subject, path):
+
     file_path = path
     df, time, velocity, heartrate, distance, cadence, power, altitude = read_fit_file(file_path)
 
     up, down = calculate_elevation_changes(df)
 
-    st.write("**Höhenmeter**")
-    st.write(f"Aufwärts: {np.round(up, 1)} m")
-    st.write(f"Abwärts: {np.round(down, 1)} m")
+    st.write("**Altitude**")
+    st.write(f"Upwards: {np.round(up, 1)} m")
+    st.write(f"Downwards: {np.round(down, 1)} m")
 
-    st.write("**Statistiken**")
+    st.write("**Statistics**")
     data = [
-        {"Metric": "Heartrate Max - calculation ", "Value": np.round(heartrate.max(), 1), "Unit": "bpm"}, # max errechnete HF eintragen, Beistrich fehlt
+        {"Metric": "Heartrate Max - calculation ", "Value": np.round(subject.max_hr, 1), "Unit": "bpm"},
         {"Metric": "Heartrate Max", "Value": np.round(heartrate.max(), 1), "Unit": "bpm"},
         {"Metric": "Heartrate Min", "Value": np.round(heartrate.min(), 1), "Unit": "bpm"},
         {"Metric": "Heartrate Mean", "Value": np.round(heartrate.mean(), 1), "Unit": "bpm"},
@@ -170,12 +170,9 @@ def main(path):
     df_data['Value'] = df_data['Value'].apply(lambda x: f'{x:.1f}')
 
     st.table(df_data)
-    if st.checkbox("Use manual max HR"):
-        hr_max = st.number_input("Max HR", value=heartrate.max())
-    else:
-        hr_max = heartrate.max()
-    fig, zone_counts = make_plot_power(df, hr_max)
-    st.plotly_chart(fig)
+
+    """fig, zone_counts = make_plot_power(df, hr_max)
+    st.plotly_chart(fig)"""
 
 
 
