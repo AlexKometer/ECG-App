@@ -9,7 +9,7 @@ Authors of this repository are: Alexander Kometer and Georg Sagmeister
 - display the name, year of birth of the subject
 - Opportunity to choose between the tests if a person has more than 1 test
 - Display the testdate and the lenght of the test
-- ECG data should be resamplet to shorten loading times
+- ECG data should be resampled to shorten loading times
 - Users can choose a time span of the tests
 - Commentary and Docstrings
 - Design optimized for computer monitors and optical appealing
